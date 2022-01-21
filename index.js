@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const formidable = require("express-formidable");
 const mongoose = require("mongoose");
+const cors = require("cors");
 
 //connexion à la bdd
 // mongoose.connect("mongodb://localhost/vinted");
