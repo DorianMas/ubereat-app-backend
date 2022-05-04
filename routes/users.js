@@ -8,46 +8,36 @@ const uid2 = require("uid2");
 const User = require("../models/User");
 
 router.post("/user/signup", async (req, res) => {
+  console.log(req.fields);
+
   try {
-    //On vérifie qu'on envoie bien un username
-    if (req.fields.username === undefined) {
-      res.status(400).json({ message: "Missing parameter" });
+    //On véirifie que l'email en base de données soit bien disponible
+    const isUserExist = await User.findOne({ email: req.fields.email });
+    if (isUserExist !== null) {
+      res.status(400).json({ message: "This email already has an account" });
     } else {
-      //On véirifie que l'emaikl en base de données soit bien disponible
-      const isUserExist = await User.findOne({ email: req.fields.email });
-      if (isUserExist !== null) {
-        res.status(400).json({ message: "This email already has an account" });
-      } else {
-        console.log(req.fields);
+      //Etape 1 : hasher le mot de passe
+      const salt = uid2(64);
+      const hash = SHA256(req.fields.password + salt).toString(encBase64);
+      const token = uid2(64);
+      //   console.log("salt==>", salt);
+      //   console.log("hash==>", hash);
 
-        //Etape 1 : hasher le mot de passe
-        const salt = uid2(64);
-        const hash = SHA256(req.fields.password + salt).toString(encBase64);
-        const token = uid2(64);
-        //   console.log("salt==>", salt);
-        //   console.log("hash==>", hash);
+      //Etape 2 : créer le nouvel utilisateur
+      const newUser = new User({
+        email: req.fields.email,
+        token: token,
+        hash: hash,
+        salt: salt,
+      });
 
-        //Etape 2 : créer le nouvel utilisateur
-        const newUser = new User({
-          email: req.fields.email,
-          account: {
-            username: req.fields.username,
-            phone: req.fields.phone,
-          },
-          token: token,
-          hash: hash,
-          salt: salt,
-        });
-
-        // Etape 3 : sauvegarder ce nouvel utilisateur dans la bdd
-        await newUser.save();
-        res.json({
-          _id: newUser._id,
-          email: newUser.email,
-          token: newUser.token,
-          account: newUser.account,
-        });
-      }
+      // Etape 3 : sauvegarder ce nouvel utilisateur dans la bdd
+      await newUser.save();
+      res.json({
+        _id: newUser._id,
+        email: newUser.email,
+        token: newUser.token,
+      });
     }
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -55,6 +45,8 @@ router.post("/user/signup", async (req, res) => {
 });
 
 router.post("/user/login", async (req, res) => {
+  console.log(req.fields);
+
   try {
     const user = await User.findOne({ email: req.fields.email });
     if (user === null) {
@@ -65,11 +57,11 @@ router.post("/user/login", async (req, res) => {
         encBase64
       );
       console.log(newHash, "Mon nouveau hash");
+
       if (user.hash === newHash) {
         res.json({
           _id: user._id,
           token: user.token,
-          account: user.account,
         });
       } else {
         res.status(401).json({ message: "Unauthorized ! 2" });
