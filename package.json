@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node index.js"
   },
   "keywords": [],
@@ -13,10 +14,12 @@
     "cloudinary": "^1.28.1",
     "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
-    "dotenv": "^14.2.0",
+    "dotenv": "^14.3.2",
     "express": "^4.17.2",
     "express-formidable": "^1.2.0",
+    "install": "^0.13.0",
     "mongoose": "^6.1.7",
+    "npm": "^8.9.0",
     "uid2": "^1.0.0"
   }
 }
